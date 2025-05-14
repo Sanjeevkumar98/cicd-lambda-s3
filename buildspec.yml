@@ -12,6 +12,8 @@ phases:
     commands:
       - echo "Building Lambda package..."
       - zip -r function.zip . -x "*.git*" -x "buildspec.yml"
+      - zip -r function.zip handler.py *.py  # Explicitly include handler
+      - zip -r function.zip -x "*.git*" -x "test_*.py"  # Exclude test files
       - ls -lh function.zip
 
   post_build:
