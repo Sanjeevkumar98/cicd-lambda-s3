@@ -3,15 +3,21 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 3.8  
+      python: 3.8  # or python: 3.8
     commands:
       - echo "Installing dependencies..."
       - pip install -r requirements.txt  
 
   build:
     commands:
-      - echo "Building the Lambda function..."
+      - echo "Building Lambda package..."
       - zip -r function.zip . -x "*.git*" -x "buildspec.yml"
+
+  post_build:
+    commands:
+      - echo "Uploading to S3 and updating Lambda..."
+      - aws s3 cp function.zip s3://your-lambda-deployment-bucket/function-${CODEBUILD_BUILD_ID}.zip
+      - aws lambda update-function-code --function-name YOUR_LAMBDA_FUNCTION --s3-bucket bucketforcicdpipe --s3-key function-${CODEBUILD_BUILD_ID}.zip
 
 artifacts:
   files:
