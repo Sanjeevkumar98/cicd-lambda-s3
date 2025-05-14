@@ -5,28 +5,29 @@ phases:
     runtime-versions:
       python: 3.11
     commands:
-      - echo "Current directory: $(pwd)"
-      - echo "Directory contents:"
-      - ls -R
+      - echo "=== DEBUG: Directory Structure ==="
+      - find . -type f
       - pip install -r requirements.txt -t src/
 
   build:
     commands:
-      - echo "Creating deployment package..."
-      - cd src && zip -r ../function.zip .
-      - ls -lh ../function.zip || echo "Zip creation failed"
+      - echo "=== Creating Deployment Package ==="
+      - cd src && zip -r ../function.zip . || (echo "Zip failed!" && exit 1)
+      - echo "=== Verifying ZIP ==="
+      - ls -lah ../function.zip || exit 1
+      - unzip -l ../function.zip | head -10
 
   post_build:
     commands:
-      - test -f function.zip || exit 1
-      - aws s3 cp function.zip "s3://bucketforcicdpipe/function-$(date +%s).zip"
+      - echo "=== Uploading to S3 ==="
+      - aws s3 cp function.zip "s3://bucketforcicdpipe/function-$(date +%Y%m%d%H%M%S).zip"
+      - echo "=== Updating Lambda ==="
       - aws lambda update-function-code \
           --function-name lambdaforcicd \
           --s3-bucket bucketforcicdpipe \
-          --s3-key "function-$(date +%s).zip" \
+          --s3-key "function-$(date +%Y%m%d%H%M%S).zip" \
           --region us-east-1
 
 artifacts:
   files:
     - function.zip
-  discard-paths: yes
