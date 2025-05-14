@@ -5,25 +5,28 @@ phases:
     runtime-versions:
       python: 3.11
     commands:
-      - echo "Installing dependencies..."
+      - echo "Current directory: $(pwd)"
+      - echo "Directory contents:"
+      - ls -R
       - pip install -r requirements.txt -t src/
 
   build:
     commands:
-      - echo "Packaging Lambda..."
+      - echo "Creating deployment package..."
       - cd src && zip -r ../function.zip .
-      - ls -lh function.zip
+      - ls -lh ../function.zip || echo "Zip creation failed"
 
   post_build:
     commands:
-      - echo "Deploying to S3..."
-      - aws s3 cp function.zip "s3://bucketforcicdpipe/function-${CODEBUILD_BUILD_ID}.zip"
+      - test -f function.zip || exit 1
+      - aws s3 cp function.zip "s3://bucketforcicdpipe/function-$(date +%s).zip"
       - aws lambda update-function-code \
           --function-name lambdaforcicd \
           --s3-bucket bucketforcicdpipe \
-          --s3-key "function-${CODEBUILD_BUILD_ID}.zip" \
+          --s3-key "function-$(date +%s).zip" \
           --region us-east-1
 
 artifacts:
   files:
     - function.zip
+  discard-paths: yes
