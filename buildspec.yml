@@ -16,18 +16,10 @@ phases:
 
   post_build:
     commands:
-      - echo "Attempting to upload to S3..."
-      - ls -la function.zip || echo "function.zip not found!"
-      - aws sts get-caller-identity || echo "AWS credentials problem!"
-      - aws s3 cp function.zip s3://bucketforcicdpipe/function-${CODEBUILD_BUILD_ID}.zip || echo "S3 upload failed!"
-      - aws lambda update-function-code \
-          --function-name lambdaforcicd \
-          --s3-bucket bucketforcicdpipe \
-          --s3-key function-${CODEBUILD_BUILD_ID}.zip \
-          --region us-east-1
-      
-      # Verify update
-      - aws lambda get-function --function-name lambdaforcicd
+      - echo "Build ID: ${CODEBUILD_BUILD_ID}"
+      - echo "Attempting to update Lambda..."
+      - aws lambda update-function-code --function-name lambdaforcicd --s3-bucket bucketforcicdpipe --s3-key function-${CODEBUILD_BUILD_ID}.zip --region us-east-1
+      - echo "Exit code: $?"
 
 artifacts:
   files:
