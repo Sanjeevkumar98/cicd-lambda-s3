@@ -16,7 +16,7 @@ phases:
   post_build:
     commands:
       - echo "Uploading to S3 and updating Lambda..."
-      - aws s3 cp function.zip s3://your-lambda-deployment-bucket/function-${CODEBUILD_BUILD_ID}.zip
+      - aws s3 cp function.zip s3://bucketforcicdpipe/function-${CODEBUILD_BUILD_ID}.zip
       - aws lambda update-function-code --function-name lambdaforcicd --s3-bucket bucketforcicdpipe --s3-key function-${CODEBUILD_BUILD_ID}.zip
 
 artifacts:
