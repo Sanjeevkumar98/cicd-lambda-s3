@@ -6,21 +6,23 @@ phases:
       python: 3.11
     commands:
       - echo "Installing dependencies..."
-      - pip install -r requirements.txt
+      - pip install -r requirements.txt -t src/
 
   build:
     commands:
-      - echo "Building Lambda package..."
-      - zip -r function.zip handler.py *.py
-      - zip -r function.zip -x "*.git*" -x "test_*" -x "buildspec.yml"
+      - echo "Packaging Lambda..."
+      - cd src && zip -r ../function.zip .
       - ls -lh function.zip
 
   post_build:
     commands:
-      - echo "Uploading to S3..."
-      - aws s3 cp function.zip s3://bucketforcicdpipe/function-${CODEBUILD_BUILD_ID}.zip
-      - echo "Updating Lambda..."
-      - aws lambda update-function-code --function-name lambdaforcicd --s3-bucket bucketforcicdpipe --s3-key function-${CODEBUILD_BUILD_ID}.zip --region us-east-1
+      - echo "Deploying to S3..."
+      - aws s3 cp function.zip "s3://bucketforcicdpipe/function-${CODEBUILD_BUILD_ID}.zip"
+      - aws lambda update-function-code \
+          --function-name lambdaforcicd \
+          --s3-bucket bucketforcicdpipe \
+          --s3-key "function-${CODEBUILD_BUILD_ID}.zip" \
+          --region us-east-1
 
 artifacts:
   files:
