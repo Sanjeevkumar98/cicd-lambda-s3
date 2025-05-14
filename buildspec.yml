@@ -12,6 +12,7 @@ phases:
     commands:
       - echo "Building Lambda package..."
       - zip -r function.zip . -x "*.git*" -x "buildspec.yml"
+      - ls -lh function.zip
 
   post_build:
     commands:
@@ -19,6 +20,14 @@ phases:
       - ls -la function.zip || echo "function.zip not found!"
       - aws sts get-caller-identity || echo "AWS credentials problem!"
       - aws s3 cp function.zip s3://bucketforcicdpipe/function-${CODEBUILD_BUILD_ID}.zip || echo "S3 upload failed!"
+      - aws lambda update-function-code \
+          --function-name lambdaforcicd \
+          --s3-bucket bucketforcicdpipe \
+          --s3-key function-${CODEBUILD_BUILD_ID}.zip \
+          --region us-east-1
+      
+      # Verify update
+      - aws lambda get-function --function-name lambdaforcicd
 
 artifacts:
   files:
