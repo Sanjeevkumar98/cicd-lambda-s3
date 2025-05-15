@@ -6,11 +6,14 @@ phases:
       python: 3.12
   build:
     commands:
+      - echo "Zipping the Lambda function..."
       - zip function.zip app.py
-      - aws s3 cp function.zip s3://your-s3-bucket-name/function.zip
+      - echo "Uploading to S3..."
+      - aws s3 cp function.zip s3://my-lambda-artifacts-bucket/function.zip
+      - echo "Deploying to Lambda..."
       - aws lambda update-function-code \
-          --function-name your-lambda-function-name \
-          --s3-bucket your-s3-bucket-name \
+          --function-name my-hello-lambda \
+          --s3-bucket my-lambda-artifacts-bucket \
           --s3-key function.zip
 
 artifacts:
