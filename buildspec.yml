@@ -3,30 +3,15 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.11
-    commands:
-      - echo "=== DEBUG: Directory Structure ==="
-      - find . -type f
-      - pip install -r requirements.txt -t src/
-
+      python: 3.12
   build:
     commands:
-      - echo "=== Creating Deployment Package ==="
-      - cd src && zip -r ../function.zip . || (echo "Zip failed!" && exit 1)
-      - echo "=== Verifying ZIP ==="
-      - ls -lah ../function.zip || exit 1
-      - unzip -l ../function.zip | head -10
-
-  post_build:
-    commands:
-      - echo "=== Uploading to S3 ==="
-      - aws s3 cp function.zip "s3://bucketforcicdpipe/function-$(date +%Y%m%d%H%M%S).zip"
-      - echo "=== Updating Lambda ==="
+      - zip function.zip app.py
+      - aws s3 cp function.zip s3://your-s3-bucket-name/function.zip
       - aws lambda update-function-code \
-          --function-name lambdaforcicd \
-          --s3-bucket bucketforcicdpipe \
-          --s3-key "function-$(date +%Y%m%d%H%M%S).zip" \
-          --region us-east-1
+          --function-name your-lambda-function-name \
+          --s3-bucket your-s3-bucket-name \
+          --s3-key function.zip
 
 artifacts:
   files:
