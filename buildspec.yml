@@ -9,11 +9,11 @@ phases:
       - echo "Zipping the Lambda function..."
       - zip function.zip app.py
       - echo "Uploading to S3..."
-      - aws s3 cp function.zip s3://my-lambda-artifacts-bucket/function.zip
+      - aws s3 cp function.zip s3://my-lambda-artifacts-bucket-sanju/function.zip
       - echo "Deploying to Lambda..."
       - aws lambda update-function-code \
           --function-name my-hello-lambda \
-          --s3-bucket my-lambda-artifacts-bucket \
+          --s3-bucket my-lambda-artifacts-bucket-sanju \
           --s3-key function.zip
 
 artifacts:
