@@ -5,6 +5,8 @@ phases:
     runtime-versions:
       python: 3.8
     commands:
+      - echo "Current IAM identity:"
+      - aws sts get-caller-identity
       - pip install -r requirements.txt -t .
   build:
     commands:
