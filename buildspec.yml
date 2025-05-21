@@ -11,13 +11,20 @@ phases:
   build:
     commands:
       - echo "Building function package..."
-      - zip -r function.zip .
-      - echo "Uploading to S3..."
-      - aws s3 cp function.zip "s3://$ARTIFACT_BUCKET/$LAMBDA_NAME/function-$(date +%Y%m%d%H%M%S).zip"
+      - TIMESTAMP=$(date +%Y%m%d%H%M%S)
+      - ZIP_FILE="function-${TIMESTAMP}.zip"
+      - zip -r ${ZIP_FILE} .
+      - echo "Uploading ${ZIP_FILE} to S3..."
+      - aws s3 cp ${ZIP_FILE} "s3://${ARTIFACT_BUCKET}/${LAMBDA_NAME}/${ZIP_FILE}"
+      - echo "Waiting for S3 consistency..."
       - sleep 30
-      - echo "Updating Lambda function..."
-      - aws lambda update-function-code --function-name $LAMBDA_NAME --s3-bucket $ARTIFACT_BUCKET --s3-key "$LAMBDA_NAME/function-$(date +%Y%m%d%H%M%S).zip"
+      - echo "Updating Lambda function with ${ZIP_FILE}..."
+      - aws lambda update-function-code \
+          --function-name ${LAMBDA_NAME} \
+          --s3-bucket ${ARTIFACT_BUCKET} \
+          --s3-key "${LAMBDA_NAME}/${ZIP_FILE}"
+      - echo "Verifying Lambda update..."
+      - aws lambda get-function --function-name ${LAMBDA_NAME} | grep LastModified
 artifacts:
   files:
-    - 'function.zip'
-
+    - '*.zip'
