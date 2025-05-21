@@ -3,17 +3,17 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      python: 3.12
+      python: 3.8
+    commands:
+      - pip install -r requirements.txt -t .
   build:
     commands:
-      - echo "Zipping the Lambda function..."
-      - zip function.zip app.py
+      - echo "Building function package..."
+      - zip -r function.zip .
       - echo "Uploading to S3..."
-      - aws s3 cp function.zip s3://my-lambda-artifacts-bucket-sanju/function.zip
-      - echo "Deploying to Lambda..."
-      - aws lambda update-function-code --function-name my-hello-lambda --s3-bucket my-lambda-artifacts-bucket-sanju --s3-key function.zip
-
-
+      - aws s3 cp function.zip s3://${ARTIFACT_BUCKET}/${LAMBDA_NAME}/function-${CODEBUILD_BUILD_ID}.zip
+      - echo "Updating Lambda function..."
+      - aws lambda update-function-code --function-name ${LAMBDA_NAME} --s3-bucket ${ARTIFACT_BUCKET} --s3-key ${LAMBDA_NAME}/function-${CODEBUILD_BUILD_ID}.zip
 artifacts:
   files:
-    - function.zip
+    - 'function.zip'
