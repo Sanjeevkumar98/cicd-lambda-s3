@@ -11,9 +11,9 @@ phases:
       - echo "Building function package..."
       - zip -r function.zip .
       - echo "Uploading to S3..."
-      - aws s3 cp function.zip s3://${ARTIFACT_BUCKET}/${LAMBDA_NAME}/function-${CODEBUILD_BUILD_ID}.zip
+      - aws s3 cp function.zip "s3://$ARTIFACT_BUCKET/$LAMBDA_NAME/function-$(date +%Y%m%d%H%M%S).zip"
       - echo "Updating Lambda function..."
-      - aws lambda update-function-code --function-name ${LAMBDA_NAME} --s3-bucket ${ARTIFACT_BUCKET} --s3-key ${LAMBDA_NAME}/function-${CODEBUILD_BUILD_ID}.zip
+      - aws lambda update-function-code --function-name $LAMBDA_NAME --s3-bucket $ARTIFACT_BUCKET --s3-key "$LAMBDA_NAME/function-$(date +%Y%m%d%H%M%S).zip"
 artifacts:
   files:
     - 'function.zip'
