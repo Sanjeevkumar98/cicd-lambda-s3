@@ -16,26 +16,21 @@ phases:
   build:
     commands:
       - echo "Building function package..."
-      - export TIMESTAMP=$(date +%Y%m%d%H%M%S)
-      - export ZIP_FILE=function-${TIMESTAMP}.zip
+      - TIMESTAMP=$(date +%Y%m%d%H%M%S)
+      - ZIP_FILE="function-${TIMESTAMP}.zip"
       - zip -r ${ZIP_FILE} .
-      
       - echo "Uploading ${ZIP_FILE} to S3..."
       - aws s3 cp ${ZIP_FILE} "s3://${ARTIFACT_BUCKET}/${LAMBDA_NAME}/${ZIP_FILE}"
-      
       - echo "Waiting for S3 consistency..."
       - sleep 30
-      
       - echo "Validating environment variables..."
       - if [ -z "${LAMBDA_NAME}" ]; then echo "ERROR: LAMBDA_NAME is empty"; exit 1; fi
       - if [ -z "${ARTIFACT_BUCKET}" ]; then echo "ERROR: ARTIFACT_BUCKET is empty"; exit 1; fi
-      
       - echo "Updating Lambda function with ${ZIP_FILE}..."
       - aws lambda update-function-code \
           --function-name ${LAMBDA_NAME} \
           --s3-bucket ${ARTIFACT_BUCKET} \
           --s3-key "${LAMBDA_NAME}/${ZIP_FILE}"
-      
       - echo "Verifying Lambda update..."
       - aws lambda get-function --function-name ${LAMBDA_NAME} | grep LastModified
 
